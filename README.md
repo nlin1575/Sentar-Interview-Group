@@ -1,6 +1,16 @@
 # Sentar-Interview-Group
 
-Quick Read-Me doc
+Hey guys,
+
+So the plan is for everyone to fork their own repositories based off of this main one, and then from there we will each work on the project on our own, if you get stuck on a part thats fine, just skip it. Or you can ask for help in the Discord.
+
+For the mock entries we plan to just use the previous CSV entries that they gave us, but you may need to add/remove items from it too.
+
+We plan on using Node.JS and Supabase, but if you want to use Python or a different DB feel free to.
+
+On Thursday(6/26) the plan is to gather all together and adjust our code accordingly.
+
+Ask questions in the discord if needed.
 
 ---
 
