@@ -4,7 +4,9 @@
    npm install node-fetch@2    ← already done earlier
 ===================================================================== */
 
+import path from 'path';
 import fetch from 'node-fetch';
+import { spawnSync } from 'child_process';
 import { generateMockEmbedding, calculateEmbeddingCost } from '../utils/mockEmbedding';
 
 /* Pipeline flag: we’re not talking to OpenAI at all */
@@ -13,11 +15,31 @@ export const isOpenAIAvailable = false;
 /*───────────────────────────────────────────────────────────────────
   1.  Embeddings   (still mock)
 ───────────────────────────────────────────────────────────────────*/
-export async function generateEmbedding(text: string): Promise<{ embedding: number[]; cost: number }> {
-  return {
-    embedding: generateMockEmbedding(text, 384),
-    cost: calculateEmbeddingCost(text)
-  };
+const PY_SCRIPT = path.resolve(__dirname, '../utils/embed.py');
+
+export async function generateEmbedding(
+  text: string
+): Promise<{ embedding: number[]; cost: number }> {
+  try {
+    const result = spawnSync('python3', [PY_SCRIPT], { input: text, encoding: 'utf8', maxBuffer: 5_000_000 });
+
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(result.stderr || 'embed.py failed');
+
+    const embedding = JSON.parse(result.stdout) as number[];
+    if (!Array.isArray(embedding) || embedding.length !== 384) {
+      throw new Error('Invalid embedding length');
+    }
+
+    /* Real cost: all-MiniLM is local ⇒ $0 */
+    return { embedding, cost: 0 };
+  } catch (err) {
+    console.warn('[EMBEDDING] Python embed failed, using mock:', err);
+    return {
+      embedding: generateMockEmbedding(text, 384),
+      cost: calculateEmbeddingCost(text)
+    };
+  }
 }
 
 /*───────────────────────────────────────────────────────────────────

@@ -57,7 +57,7 @@ export async function runPipeline(transcript: string, userId: string = 'default'
     logStep(log5);
 
     // Step 06: PARSE_ENTRY
-    const { context: ctx6, log: log6 } = step06_parseEntry(ctx5);
+    const { context: ctx6, log: log6 } = await step06_parseEntry(ctx5);
     logs.push(log6);
     logStep(log6);
 
