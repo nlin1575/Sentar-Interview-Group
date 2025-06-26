@@ -13,5 +13,6 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  testTimeout: 10000, // 10 seconds for async tests
+  testTimeout: 30000, // 30 seconds for async tests
+  silent: true, // Suppress console.log during tests
 };

@@ -100,6 +100,18 @@ JSON:
 /* 2 ── RULE-BASED PARSER                                       */
 /*──────────────────────────────────────────────────────────────*/
 function parseTextRuleBased(text: string): ParsedEntry {
+  // Handle edge cases
+  if (!text || text.trim().length === 0) {
+    return {
+      theme: ['general'],
+      vibe: ['neutral'],
+      intent: 'Express thoughts',
+      subtext: 'Processing experiences',
+      persona_trait: ['reflective'],
+      bucket: ['Thought']
+    };
+  }
+
   const lower = text.toLowerCase();
 
   /* --- theme --- */
@@ -132,18 +144,54 @@ function parseTextRuleBased(text: string): ParsedEntry {
   const detectedVibes = Object.entries(vibeMap)
     .filter(([, kws]) => kws.some(k => lower.includes(k)))
     .map(([v]) => v);
-  const vibe = detectedVibes.length > 0 ? detectedVibes : ['neutral'];
 
-  /* --- intent (very simple fallback) --- */
+  // Add emoji-based vibe detection for emoji-heavy inputs
+  const emojiVibes: string[] = [];
+  if (text.includes('😀') || text.includes('😊') || text.includes('🎉') || text.includes('✨')) {
+    emojiVibes.push('happy');
+  }
+  if (text.includes('😔') || text.includes('😢') || text.includes('😞')) {
+    emojiVibes.push('sad');
+  }
+  if (text.includes('😰') || text.includes('😟') || text.includes('😨')) {
+    emojiVibes.push('anxious');
+  }
+  if (text.includes('🔥') || text.includes('💪') || text.includes('🚀')) {
+    emojiVibes.push('excited');
+  }
+  if (text.includes('🙏') || text.includes('💝') || text.includes('❤️')) {
+    emojiVibes.push('grateful');
+  }
+
+  const allVibes = [...detectedVibes, ...emojiVibes];
+  const vibe = allVibes.length > 0 ? [...new Set(allVibes)] : ['neutral'];
+
+  /* --- intent (handle edge cases) --- */
   let intent = 'Express thoughts and feelings';
-  const mNeed = lower.match(/(?:need|want|plan|hope)\s+to\s+([^,\.!?]+)/);
-  if (mNeed) intent = `Work to ${mNeed[1].trim()}`;
+
+  // Handle very short inputs
+  if (text.trim().length <= 3) {
+    intent = 'Brief expression';
+  } else {
+    const mNeed = lower.match(/(?:need|want|plan|hope)\s+to\s+([^,.!?]+)/);
+    if (mNeed) intent = `Work to ${mNeed[1].trim()}`;
+  }
 
   /* --- subtext (simple cues) --- */
-  const subtext = lower.includes('but') ? 'Has conflicting feelings' : 'Processing experiences';
+  let subtext = 'Processing experiences';
+  if (lower.includes('but')) {
+    subtext = 'Has conflicting feelings';
+  } else if (text.trim().length <= 10) {
+    subtext = 'Brief moment of reflection';
+  }
 
-  /* --- persona trait (simple keywords) --- */
-  const trait = lower.includes('plan') ? ['organiser'] : ['reflective'];
+  /* --- persona trait (handle edge cases) --- */
+  let trait = ['reflective'];
+  if (lower.includes('plan')) {
+    trait = ['organiser'];
+  } else if (text.trim().length <= 5) {
+    trait = ['expressive'];
+  }
 
   /* --- bucket --- */
   const bucket = ['Thought'];
