@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
+import Papa from 'papaparse';
+
 
 interface PipelineResult {
   entryId: string;
@@ -109,41 +111,17 @@ function App() {
     }
   };
 
-  const parseCsvContent = (csvContent: string): { transcript: string }[] => {
-    const lines = csvContent.split('\n').filter(line => line.trim());
-    const entries: { transcript: string }[] = [];
-
-    if (lines.length === 0) return entries;
-
-    // Always skip the first row as header
-    const startIndex = 1;
-
-    for (let i = startIndex; i < lines.length && entries.length < 99; i++) {
-      const line = lines[i].trim();
-      if (line) {
-        // Parse CSV and get the second column (index 1) for 'transcript_user'
-        const columns = line.split(',');
-
-        // Check if second column exists
-        if (columns.length < 2) {
-          console.warn(`Row ${i + 1}: Missing second column 'transcript_user', skipping`);
-          continue;
-        }
-
-        let transcript = columns[1]?.trim(); // Second column (index 1)
-
-        // Remove surrounding quotes if present
-        if (transcript && transcript.startsWith('"') && transcript.endsWith('"')) {
-          transcript = transcript.slice(1, -1);
-        }
-
-        if (transcript && transcript.length > 0) {
-          entries.push({ transcript });
-        }
-      }
-    }
-
-    return entries;
+  const parseCsvContent = (csv: string): { transcript: string }[] => {
+    const { data } = Papa.parse<{ transcript_user?: string }>(csv, {
+      header: true,        // first row = column names
+      skipEmptyLines: true
+    });
+  
+    return data
+      .map(r => r.transcript_user?.trim())   // use the header name
+      .filter(Boolean)                       // drop blanks / undefined
+      .slice(0, 99)                          // API limit
+      .map(t => ({ transcript: t! }));       // shape for POST body
   };
 
   const handleBulkProcess = async () => {
