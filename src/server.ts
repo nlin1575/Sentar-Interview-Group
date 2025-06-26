@@ -135,9 +135,32 @@ app.post('/api/simulate/:type', async (req, res) => {
         simulation_type: 'hundred'
       });
       
+    } else if (type === 'fastForward') {
+      // Fast forward simulation with custom entry count (add, don't clear)
+      const { entryCount = 0 } = req.body;
+      const userId = 'first-user';
+      console.log(entryCount);
+      // Add the specified number of mock entries (do not clear)
+      if (entryCount > 0) {
+        db.addMockEntries(userId, entryCount);
+      }
+      
+      // Run pipeline with a new transcript
+      const transcript = "I'm feeling overwhelmed by all the intern feedback sessions, but I'm also excited about the progress they're making.";
+      
+      lastPipelineLogs = [];
+      const result = await runPipeline(transcript, userId);
+      
+      res.json({
+        result,
+        logs: lastPipelineLogs,
+        simulation_type: 'fastForward',
+        entry_count: db.getEntryCount(userId)
+      });
+      
     } else {
       res.status(400).json({
-        error: 'Invalid simulation type. Use "first" or "hundred"'
+        error: 'Invalid simulation type. Use "first", "hundred", or "fastForward"'
       });
     }
     
@@ -147,6 +170,14 @@ app.post('/api/simulate/:type', async (req, res) => {
       error: error instanceof Error ? error.message : 'Simulation failed'
     });
   }
+});
+
+app.post('/api/clear/:userId', (req, res) => {
+  const { userId } = req.params;
+  if (userId) {
+    db.clearUser(userId);
+  }
+  res.json({ success: true, message: `Cleared memory DB for user ${userId}` });
 });
 
 // Health check
@@ -163,5 +194,6 @@ app.listen(PORT, () => {
   console.log(`   GET  /api/profile/:userId - Get user profile`);
   console.log(`   POST /api/simulate/first - Simulate first entry`);
   console.log(`   POST /api/simulate/hundred - Simulate 100th entry`);
+  console.log(`   POST /api/simulate/fastForward - Fast forward with custom entries`);
   console.log(`   GET  /api/status - API status`);
 });
