@@ -3,6 +3,12 @@ import { PipelineContext, LogEntry, ParsedEntry } from '../types';
 import fetch from 'node-fetch';          // fetch for Node ≤18
 import { jsonrepair } from 'jsonrepair'; // fixes almost-valid JSON
 
+function toArray<T>(val: T | T[] | null | undefined): T[] {
+  if (Array.isArray(val)) return val;
+  if (val == null || val === '') return [];
+  return [val as T];
+}
+
 /* -----------------------------------------------------------------
    Call Ollama (default model: `phi`) and return a ParsedEntry object
    ----------------------------------------------------------------- */
@@ -218,6 +224,11 @@ function parseTextRuleBased(text: string): ParsedEntry {
       parsed = parseTextRuleBased(context.raw_text);
       note = '[FALLBACK] rule-based parser';
     }
+
+    parsed.theme         = toArray(parsed.theme);
+    parsed.vibe          = toArray(parsed.vibe);
+    parsed.persona_trait = toArray(parsed.persona_trait);
+    parsed.bucket        = toArray(parsed.bucket);  
   
     /* update context */
     const updatedContext: Partial<PipelineContext> = { ...context, parsed };
