@@ -11,7 +11,7 @@ function step13_costLatencyLog(context) {
         throw new Error('start_time and costs are required for cost/latency logging');
     }
     const execution_time = Date.now() - context.start_time;
-    const { embedding_tokens, embedding_cost, embedding_type, gpt_tokens, gpt_cost, gpt_type, total_tokens, total_cost } = context.costs;
+    const { embedding_tokens, embedding_cost, embedding_type, parsing_tokens, parsing_cost, parsing_type, gpt_tokens, gpt_cost, gpt_type, total_tokens, total_cost } = context.costs;
     // Calculate performance metrics
     const latency_seconds = execution_time / 1000;
     const memory_usage_mb = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -49,7 +49,7 @@ function step13_costLatencyLog(context) {
     const formatCost = (cost, type) => {
         return type === 'mock' ? 'MOCK' : `$${cost.toFixed(4)}`;
     };
-    const totalCostDisplay = (embedding_type === 'mock' && gpt_type === 'mock') ? 'MOCK' : `$${total_cost.toFixed(4)}`;
+    const totalCostDisplay = (embedding_type === 'mock' && parsing_type === 'mock' && gpt_type === 'mock') ? 'MOCK' : `$${total_cost.toFixed(4)}`;
     // Update context (no changes needed)
     const updatedContext = context;
     // Create detailed log entry
@@ -57,14 +57,15 @@ function step13_costLatencyLog(context) {
         tag: 'COST_LATENCY_LOG',
         input: `execution_time=${execution_time}ms, total_cost=${totalCostDisplay}`,
         output: `performance_grade=${performance_grade}, cost_grade=${cost_grade}`,
-        note: `Wall-Clock: ${latency_seconds.toFixed(3)}s | Costs: embedding=${formatCost(embedding_cost, embedding_type)}, gpt=${formatCost(gpt_cost, gpt_type)} | Memory: ${memory_usage_mb.toFixed(1)}MB`
+        note: `Wall-Clock: ${latency_seconds.toFixed(3)}s | Costs: embedding=${formatCost(embedding_cost, embedding_type)}, parsing=${formatCost(parsing_cost, parsing_type)}, gpt=${formatCost(gpt_cost, gpt_type)} | Memory: ${memory_usage_mb.toFixed(1)}MB`
     };
     // Also log to console for visibility
     console.log('\n=== PIPELINE PERFORMANCE SUMMARY ===');
     console.log(`⏱️  Wall-Clock Time: ${latency_seconds.toFixed(3)}s (${performance_grade} - ${performance_points} pts)`);
     console.log(`💰 Total Cost: ${totalCostDisplay} (${cost_grade} - ${cost_points} pts)`);
-    console.log(`   - Embedding: ${formatCost(embedding_cost, embedding_type)}`);
-    console.log(`   - GPT: ${formatCost(gpt_cost, gpt_type)}`);
+    console.log(`   - Embedding: ${formatCost(embedding_cost, embedding_type)} (${embedding_type})`);
+    console.log(`   - Parsing: ${formatCost(parsing_cost, parsing_type)} (${parsing_type})`);
+    console.log(`   - GPT: ${formatCost(gpt_cost, gpt_type)} (${gpt_type})`);
     console.log(`🧠 Memory Usage: ${memory_usage_mb.toFixed(1)}MB`);
     console.log('=====================================\n');
     return { context: updatedContext, log };

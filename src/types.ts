@@ -56,10 +56,13 @@ export interface PipelineContext {
   costs: {
     embedding_tokens: number;
     embedding_cost: number;
-    embedding_type: 'real' | 'mock';
+    embedding_type: 'openai' | 'local' | 'mock';
+    parsing_tokens: number;
+    parsing_cost: number;
+    parsing_type: 'openai' | 'local' | 'mock';
     gpt_tokens: number;
     gpt_cost: number;
-    gpt_type: 'real' | 'mock';
+    gpt_type: 'openai' | 'local' | 'mock';
     total_tokens: number;
     total_cost: number;
   };

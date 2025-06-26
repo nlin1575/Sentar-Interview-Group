@@ -1,8 +1,9 @@
 "use strict";
 /* =====================================================================
-   services/openai.ts   –  LOCAL LLM (Ollama) FOR GPT RESPONSES
+   services/openai.ts   –  LLM SELECTION: OpenAI → Local → Mock
    ---------------------------------------------------------------------
-   npm install node-fetch@2    ← already done earlier
+   Priority: OpenAI API → Local LLM (Ollama) → Mock responses
+   Cost tracking for all three modes
 ===================================================================== */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -14,14 +15,47 @@ exports.generateGPTResponse = generateGPTResponse;
 const path_1 = __importDefault(require("path"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const child_process_1 = require("child_process");
+const openai_1 = __importDefault(require("openai"));
 const mockEmbedding_1 = require("../utils/mockEmbedding");
-/* Pipeline flag: we’re not talking to OpenAI at all */
-exports.isOpenAIAvailable = false;
+// Check for OpenAI API key
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+exports.isOpenAIAvailable = !!OPENAI_API_KEY;
+// Initialize OpenAI client if API key is available
+const openai = exports.isOpenAIAvailable ? new openai_1.default({ apiKey: OPENAI_API_KEY }) : null;
+// Check for local LLM (Ollama) availability
+async function isLocalLLMAvailable() {
+    try {
+        const res = await (0, node_fetch_1.default)('http://localhost:11434/api/tags', { timeout: 2000 });
+        return res.ok;
+    }
+    catch {
+        return false;
+    }
+}
 /*───────────────────────────────────────────────────────────────────
-  1.  Embeddings   (still mock)
+  1.  Embeddings   (OpenAI → Local → Mock)
 ───────────────────────────────────────────────────────────────────*/
 const PY_SCRIPT = path_1.default.resolve(__dirname, '../utils/embed.py');
 async function generateEmbedding(text) {
+    // Try OpenAI first
+    if (exports.isOpenAIAvailable && openai) {
+        try {
+            const response = await openai.embeddings.create({
+                model: 'text-embedding-3-small',
+                input: text,
+                encoding_format: 'float'
+            });
+            const embedding = response.data[0].embedding;
+            const tokens = response.usage.total_tokens;
+            // OpenAI text-embedding-3-small: $0.00002 per 1K tokens
+            const cost = (tokens / 1000) * 0.00002;
+            return { embedding, tokens, cost, type: 'openai' };
+        }
+        catch (err) {
+            console.warn('[EMBEDDING] OpenAI failed, trying local:', err);
+        }
+    }
+    // Try local embedding
     try {
         const result = (0, child_process_1.spawnSync)('python3', [PY_SCRIPT], { input: text, encoding: 'utf8', maxBuffer: 5000000 });
         if (result.error)
@@ -32,12 +66,12 @@ async function generateEmbedding(text) {
         if (!Array.isArray(embedding) || embedding.length !== 384) {
             throw new Error('Invalid embedding length');
         }
-        /* Real cost: all-MiniLM is local ⇒ $0 */
+        /* Local cost: $0 */
         const tokens = Math.ceil(text.length / 4); // Approximate tokens (4 chars per token)
-        return { embedding, tokens, cost: 0, type: 'real' };
+        return { embedding, tokens, cost: 0, type: 'local' };
     }
     catch (err) {
-        console.warn('[EMBEDDING] Python embed failed, using mock:', err);
+        console.warn('[EMBEDDING] Local failed, using mock:', err);
         const tokens = Math.ceil(text.length / 4); // Approximate tokens (4 chars per token)
         return {
             embedding: (0, mockEmbedding_1.generateMockEmbedding)(text, 384),
@@ -48,12 +82,11 @@ async function generateEmbedding(text) {
     }
 }
 /*───────────────────────────────────────────────────────────────────
-  2.  GPT Response – Ollama first, mock fallback
+  2.  GPT Response – OpenAI → Local → Mock
 ───────────────────────────────────────────────────────────────────*/
 async function generateGPTResponse(parsed, profile, carry_in, emotion_flip) {
-    try {
-        const prompt = buildEmpathyPrompt(parsed, profile, carry_in, emotion_flip);
-        const fullPrompt = `
+    const prompt = buildEmpathyPrompt(parsed, profile, carry_in, emotion_flip);
+    const fullPrompt = `
 You are an empathetic AI companion. 
 Reply with ONE sentence of gentle support that ends with an encouraging action or positive reassurance.
 It MUST be 120 characters or fewer.
@@ -62,39 +95,69 @@ ${prompt}
 
 Response:
 `;
-        const res = await (0, node_fetch_1.default)('http://localhost:11434/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'phi',
-                prompt: fullPrompt,
-                stream: false,
-                options: { temperature: 0.7, num_predict: 40 } // shorter completion
-            })
-        });
-        if (!res.ok)
-            throw new Error(`Ollama HTTP ${res.status}`);
-        const { response } = (await res.json());
-        /* --- post-process to ONE sentence, ≤120 chars --- */
-        const MAX = 120;
-        let reply = response.replace(/\s+/g, ' ').trim();
-        /* keep text up to first sentence end (. ! ?) */
-        const firstEnd = reply.search(/[.!?]\s|[.!?]$/);
-        if (firstEnd !== -1)
-            reply = reply.slice(0, firstEnd + 1);
-        /* hard cap length */
-        if (reply.length > MAX)
-            reply = reply.slice(0, MAX - 3).trimEnd() + '...';
-        // Estimate tokens: prompt + response
-        const promptTokens = Math.ceil(fullPrompt.length / 4);
-        const responseTokens = Math.ceil(reply.length / 4);
-        const totalTokens = promptTokens + responseTokens;
-        return { response: reply, tokens: totalTokens, cost: 0, type: 'real' };
+    // Try OpenAI first
+    if (exports.isOpenAIAvailable && openai) {
+        try {
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: 'You are an empathetic AI companion. Reply with ONE sentence of gentle support that ends with an encouraging action or positive reassurance. It MUST be 120 characters or fewer.' },
+                    { role: 'user', content: prompt }
+                ],
+                max_tokens: 40,
+                temperature: 0.7
+            });
+            const reply = response.choices[0].message.content?.trim() || '';
+            const totalTokens = response.usage?.total_tokens || 0;
+            // OpenAI gpt-4o-mini: $0.00015 per 1K input tokens, $0.0006 per 1K output tokens
+            const inputCost = ((response.usage?.prompt_tokens || 0) / 1000) * 0.00015;
+            const outputCost = ((response.usage?.completion_tokens || 0) / 1000) * 0.0006;
+            const cost = inputCost + outputCost;
+            return { response: reply, tokens: totalTokens, cost, type: 'openai' };
+        }
+        catch (err) {
+            console.warn('[GPT_REPLY] OpenAI failed, trying local:', err);
+        }
+    }
+    // Try local LLM (Ollama)
+    try {
+        const localAvailable = await isLocalLLMAvailable();
+        if (localAvailable) {
+            const res = await (0, node_fetch_1.default)('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'phi',
+                    prompt: fullPrompt,
+                    stream: false,
+                    options: { temperature: 0.7, num_predict: 40 }
+                })
+            });
+            if (!res.ok)
+                throw new Error(`Ollama HTTP ${res.status}`);
+            const { response } = (await res.json());
+            /* --- post-process to ONE sentence, ≤120 chars --- */
+            const MAX = 120;
+            let reply = response.replace(/\s+/g, ' ').trim();
+            /* keep text up to first sentence end (. ! ?) */
+            const firstEnd = reply.search(/[.!?]\s|[.!?]$/);
+            if (firstEnd !== -1)
+                reply = reply.slice(0, firstEnd + 1);
+            /* hard cap length */
+            if (reply.length > MAX)
+                reply = reply.slice(0, MAX - 3).trimEnd() + '...';
+            // Estimate tokens: prompt + response
+            const promptTokens = Math.ceil(fullPrompt.length / 4);
+            const responseTokens = Math.ceil(reply.length / 4);
+            const totalTokens = promptTokens + responseTokens;
+            return { response: reply, tokens: totalTokens, cost: 0, type: 'local' };
+        }
     }
     catch (err) {
         console.warn('[GPT_REPLY] Local LLM failed, using mock:', err);
-        return generateMockGPTResponse(parsed, profile, carry_in, emotion_flip);
     }
+    // Fallback to mock
+    return generateMockGPTResponse(parsed, profile, carry_in, emotion_flip);
 }
 /*──────── helper: build empathy prompt ────────*/
 function buildEmpathyPrompt(parsed, profile, carry_in, emotion_flip) {
