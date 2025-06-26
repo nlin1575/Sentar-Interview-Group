@@ -15,7 +15,7 @@ config();
 async function simulateHundredthEntry() {
   console.log('🎯 SIMULATION: 100th entry (with 99 prior entries)\n');
   console.log(`🔑 OpenAI API: ${isOpenAIAvailable ? 'ENABLED' : 'DISABLED (using mocks)'}`);
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   // Initialize database with 99 mock entries
   console.log('📚 Initializing database with 99 mock entries...');

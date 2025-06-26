@@ -310,3 +310,224 @@ body {
 .log-entries::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* CSV Upload Styles */
+.csv-upload-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.csv-upload-section h3 {
+  color: #4a5568;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.csv-upload-section > p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+.csv-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.csv-input {
+  padding: 12px;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  background: #f7fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.csv-input:hover {
+  border-color: #667eea;
+  background: #edf2f7;
+}
+
+.file-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #e6fffa;
+  border: 1px solid #38b2ac;
+  border-radius: 6px;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.csv-format-info {
+  background: #f0f4f8;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.csv-format-info p {
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.csv-format-info ul {
+  margin: 10px 0;
+  padding-left: 20px;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.csv-format-info li {
+  margin-bottom: 5px;
+}
+
+.csv-format-info code {
+  display: block;
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.bulk-process-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.bulk-process-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.bulk-process-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bulk Results Styles */
+.bulk-results {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bulk-summary h3 {
+  color: #4a5568;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.final-profile {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f0f4f8;
+  border-radius: 8px;
+  border-left: 4px solid #38b2ac;
+}
+
+.final-profile h4 {
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.bulk-entries h4 {
+  color: #4a5568;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.entry-result {
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.entry-result.success {
+  background: #f0fff4;
+  border-color: #68d391;
+}
+
+.entry-result.error {
+  background: #fed7d7;
+  border-color: #fc8181;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.entry-number {
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.entry-status {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.entry-transcript {
+  color: #2d3748;
+  font-style: italic;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+.entry-response {
+  color: #2d3748;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.entry-meta {
+  color: #718096;
+  font-size: 0.85rem;
+}
+
+.entry-error {
+  color: #e53e3e;
+  font-weight: 500;
+}

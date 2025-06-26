@@ -9,7 +9,7 @@ import { isOpenAIAvailable } from './services/openai';
 config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
@@ -103,44 +103,131 @@ app.get('/api/profile/:userId?', (req, res) => {
   }
 });
 
+app.post('/api/bulk-process', async (req, res) => {
+  try {
+    const { entries, userId = 'bulk-user' } = req.body;
+
+    if (!entries || !Array.isArray(entries)) {
+      return res.status(400).json({
+        error: 'Invalid entries array provided'
+      });
+    }
+
+    if (entries.length === 0) {
+      return res.status(400).json({
+        error: 'No entries provided'
+      });
+    }
+
+    if (entries.length > 99) {
+      return res.status(400).json({
+        error: 'Maximum 99 entries allowed'
+      });
+    }
+
+    // Clear database for this user
+    db.clear();
+
+    const results = [];
+    let totalCost = 0;
+    let totalTime = 0;
+
+    // Process each entry through the pipeline
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+
+      if (!entry.transcript || typeof entry.transcript !== 'string') {
+        return res.status(400).json({
+          error: `Invalid transcript at entry ${i + 1}`
+        });
+      }
+
+      try {
+        const result = await runPipeline(entry.transcript, userId);
+        results.push({
+          index: i + 1,
+          transcript: entry.transcript,
+          entryId: result.entryId,
+          response_text: result.response_text,
+          carry_in: result.carry_in,
+          execution_time: result.execution_time,
+          total_cost: result.total_cost
+        });
+
+        totalCost += result.total_cost;
+        totalTime += result.execution_time;
+
+      } catch (entryError) {
+        console.error(`Error processing entry ${i + 1}:`, entryError);
+        results.push({
+          index: i + 1,
+          transcript: entry.transcript,
+          error: entryError instanceof Error ? entryError.message : 'Processing failed'
+        });
+      }
+    }
+
+    // Get final profile after all processing
+    const finalProfile = db.getProfile(userId);
+
+    res.json({
+      success: true,
+      processed_count: entries.length,
+      results,
+      final_profile: finalProfile,
+      summary: {
+        total_cost: totalCost,
+        total_time: totalTime,
+        average_time: totalTime / entries.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Bulk processing error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Bulk processing failed'
+    });
+  }
+});
+
 app.post('/api/simulate/:type', async (req, res) => {
   try {
     const { type } = req.params;
-    
+
     if (type === 'first') {
       // Clear database and run first entry simulation
       db.clear();
       const transcript = "I keep checking Slack even when I'm exhausted. I know I need rest, but I'm scared I'll miss something important.";
-      
+
       lastPipelineLogs = [];
       const result = await runPipeline(transcript, 'first-user');
-      
+
       res.json({
         result,
         logs: lastPipelineLogs,
         simulation_type: 'first'
       });
-      
+
     } else if (type === 'hundred') {
       // Initialize with 99 entries and run 100th
       db.initializeMockData('hundred-user', 99);
       const transcript = "I'm feeling overwhelmed by all the intern feedback sessions, but I'm also excited about the progress they're making.";
-      
+
       lastPipelineLogs = [];
       const result = await runPipeline(transcript, 'hundred-user');
-      
+
       res.json({
         result,
         logs: lastPipelineLogs,
         simulation_type: 'hundred'
       });
-      
+
     } else {
       res.status(400).json({
         error: 'Invalid simulation type. Use "first" or "hundred"'
       });
     }
-    
+
   } catch (error) {
     console.error('Simulation error:', error);
     res.status(500).json({
@@ -160,6 +247,7 @@ app.listen(PORT, () => {
   console.log(`🔑 OpenAI API: ${isOpenAIAvailable ? 'ENABLED' : 'DISABLED (using mocks)'}`);
   console.log(`📊 Available endpoints:`);
   console.log(`   POST /api/pipeline - Run pipeline on transcript`);
+  console.log(`   POST /api/bulk-process - Process CSV entries (max 99)`);
   console.log(`   GET  /api/profile/:userId - Get user profile`);
   console.log(`   POST /api/simulate/first - Simulate first entry`);
   console.log(`   POST /api/simulate/hundred - Simulate 100th entry`);

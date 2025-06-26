@@ -120,16 +120,19 @@ function parseTextRuleBased(text: string): ParsedEntry {
 
   /* --- vibe --- */
   const vibeMap: Record<string, string[]> = {
-    anxious: ['anxious', 'worried', 'nervous', 'stressed'],
-    exhausted: ['tired', 'exhausted', 'drained'],
-    excited: ['excited', 'thrilled', 'enthusiastic'],
-    sad: ['sad', 'down', 'depressed'],
-    happy: ['happy', 'joy', 'cheerful']
+    anxious: ['anxious', 'worried', 'nervous', 'stressed', 'overwhelmed', 'panic', 'fear'],
+    exhausted: ['tired', 'exhausted', 'drained', 'worn out', 'fatigue', 'weary'],
+    excited: ['excited', 'thrilled', 'enthusiastic', 'energetic', 'pumped', 'motivated'],
+    sad: ['sad', 'down', 'depressed', 'melancholy', 'blue', 'disappointed'],
+    happy: ['happy', 'joy', 'cheerful', 'delighted', 'pleased', 'content', 'great'],
+    grateful: ['grateful', 'thankful', 'appreciate', 'blessed'],
+    confident: ['confident', 'proud', 'accomplished', 'successful'],
+    frustrated: ['frustrated', 'annoyed', 'irritated', 'angry']
   };
-  const vibe =
-    Object.entries(vibeMap)
-      .filter(([, kws]) => kws.some(k => lower.includes(k)))
-      .map(([v]) => v) || ['neutral'];
+  const detectedVibes = Object.entries(vibeMap)
+    .filter(([, kws]) => kws.some(k => lower.includes(k)))
+    .map(([v]) => v);
+  const vibe = detectedVibes.length > 0 ? detectedVibes : ['neutral'];
 
   /* --- intent (very simple fallback) --- */
   let intent = 'Express thoughts and feelings';

@@ -139,58 +139,311 @@ function generateEmpathicResponseMock(parsed: any, profile: any, carry_in: boole
                                             return standard(vibe);
 }
 
-const firstEntry = (v: string) => ({
-  anxious:    "Sounds like you're feeling tense—that's okay.",
-  excited:    "Love the energy! Keep that momentum going.",
-  driven:     "Your motivation is inspiring—stay focused.",
-  curious:    "Great questions lead to great discoveries.",
-  exhausted:  "Rest is not failure—you're doing enough.",
-  confident:  "That confidence will take you far.",
-  frustrated: "Tough moments teach us the most.",
-  grateful:   "Gratitude is a beautiful mindset.",
-  sad:        "It's okay to feel down—you're not alone.",
-  happy:      "Your joy is contagious—embrace it!"
-}[v] || "Thanks for sharing—I'm here to listen.");
-
-const flip = (v: string) => ({
-  anxious:    "🌊 Feeling different today—that's normal.",
-  sad:        "💙 It's okay to have down moments.",
-  frustrated: "🔄 Change in mood—let's work through it.",
-  exhausted:  "💤 Your energy shifted—rest is needed.",
-  excited:    "✨ Nice to see your spirits lift!",
-  confident:  "💪 Great to see you feeling stronger!",
-  happy:      "😊 Love seeing this positive shift!",
-  grateful:   "🙏 Beautiful change in perspective."
-}[v] || "🧩 Mood shifts happen—you're adapting.");
-
-const carry = (v: string, t: string) => {
-  const byTheme: Record<string,string> = {
-    "work-life balance": "🧩 Still working on that balance, I see.",
-    productivity:        "⚡ Productivity patterns continuing.",
-    "startup culture":    "🚀 Startup life keeps you engaged.",
-    "intern management":  "👥 Leadership thoughts persist.",
-    "personal growth":    "🌱 Growth mindset showing again."
+const firstEntry = (v: string) => {
+  const responses: Record<string, string[]> = {
+    anxious: [
+      "Sounds like you're feeling tense—that's okay.",
+      "Welcome! Your feelings are valid and heard.",
+      "First entry and already being brave—well done.",
+      "Starting with honesty takes courage."
+    ],
+    excited: [
+      "Love the energy! Keep that momentum going.",
+      "What a wonderful way to begin this journey!",
+      "Your enthusiasm is already shining through.",
+      "Starting strong—I can feel your excitement!"
+    ],
+    exhausted: [
+      "Rest is not failure—you're doing enough.",
+      "Thank you for sharing even when you're tired.",
+      "Your honesty about fatigue shows self-awareness.",
+      "First step taken, even while weary—that's strength."
+    ],
+    confident: [
+      "That confidence will take you far.",
+      "Starting with self-assurance—I love it!",
+      "Your confidence is already inspiring.",
+      "What a powerful way to begin!"
+    ],
+    frustrated: [
+      "Tough moments teach us the most.",
+      "Thank you for trusting me with your frustration.",
+      "Starting with real feelings—that's authentic.",
+      "Your honesty about challenges is refreshing."
+    ],
+    grateful: [
+      "Gratitude is a beautiful mindset.",
+      "What a lovely way to start this journey!",
+      "Your appreciation already sets a positive tone.",
+      "Beginning with thankfulness—how wonderful!"
+    ],
+    sad: [
+      "It's okay to feel down—you're not alone.",
+      "Thank you for sharing your vulnerable feelings.",
+      "Starting with honesty about sadness takes courage.",
+      "Your openness is already a step toward healing."
+    ],
+    happy: [
+      "Your joy is contagious—embrace it!",
+      "What a delightful way to begin!",
+      "Your happiness is already brightening my day.",
+      "Starting with joy—the perfect foundation!"
+    ]
   };
-  if (byTheme[t]) return byTheme[t];
 
-  const byVibe: Record<string,string> = {
-    driven:     "🧩 That drive keeps showing up 💪",
-    anxious:    "🧩 Those worries are back—breathe 💨",
-    curious:    "🧩 Your curiosity continues to spark ✨",
-    exhausted:  "🧩 Still feeling drained—self-care time 💤"
-  };
-  return byVibe[v] || "🧩 Familiar patterns—you're processing.";
+  const vibeResponses = responses[v];
+  if (vibeResponses) {
+    // Use a simple hash to pick a consistent but varied response
+    const index = Math.abs(v.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % vibeResponses.length;
+    return vibeResponses[index];
+  }
+
+  return "Thanks for sharing—I'm here to listen.";
 };
 
-const standard = (v: string) => ({
-  anxious:    "Take a breath—you've got this.",
-  excited:    "That enthusiasm is infectious!",
-  driven:     "Your determination shows.",
-  curious:    "Questions lead to growth.",
-  exhausted:  "Rest when you need it.",
-  confident:  "That confidence suits you.",
-  frustrated: "Challenges make us stronger.",
-  grateful:   "Gratitude transforms everything.",
-  sad:        "Tough days don't last forever.",
-  happy:      "Your joy brightens the day."
-}[v] || "Thanks for sharing your thoughts.");
+const flip = (v: string) => {
+  const responses: Record<string, string[]> = {
+    anxious: [
+      "Feeling different today—that's completely normal.",
+      "Your mood has shifted—emotions are fluid.",
+      "A change in emotional tone—you're human.",
+      "Different feelings are emerging—that's okay."
+    ],
+    sad: [
+      "It's okay to have down moments.",
+      "Sadness is visiting—let it be heard.",
+      "Your emotions are shifting—that's natural.",
+      "Down feelings are part of the human experience."
+    ],
+    frustrated: [
+      "Change in mood—let's work through it.",
+      "Frustration is surfacing—that's information.",
+      "Your emotional landscape is shifting.",
+      "Different feelings are emerging—acknowledge them."
+    ],
+    exhausted: [
+      "Your energy shifted—rest is needed.",
+      "Fatigue is showing up—listen to your body.",
+      "Energy levels are changing—that's normal.",
+      "Tiredness is speaking—honor what it's saying."
+    ],
+    excited: [
+      "Nice to see your spirits lift!",
+      "Your energy is brightening—wonderful!",
+      "Excitement is emerging—embrace it!",
+      "Your mood is shifting upward—beautiful!"
+    ],
+    confident: [
+      "Great to see you feeling stronger!",
+      "Your confidence is emerging—own it!",
+      "Self-assurance is growing—that's powerful.",
+      "Strength is showing up—you're resilient."
+    ],
+    happy: [
+      "Love seeing this positive shift!",
+      "Joy is emerging—let it flow!",
+      "Your happiness is surfacing—embrace it!",
+      "Positive emotions are blooming—wonderful!"
+    ],
+    grateful: [
+      "Beautiful change in perspective.",
+      "Gratitude is emerging—that's transformative.",
+      "Appreciation is flowing—how lovely!",
+      "Thankfulness is surfacing—powerful shift."
+    ]
+  };
+
+  const vibeResponses = responses[v];
+  if (vibeResponses) {
+    const index = Math.abs(v.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % vibeResponses.length;
+    return vibeResponses[index];
+  }
+
+  // Fallback for emotion flips
+  const fallbacks = [
+    "Mood shifts happen—you're adapting beautifully.",
+    "Emotional changes are natural—you're processing well.",
+    "Your feelings are evolving—that's growth.",
+    "Different emotions are surfacing—that's human."
+  ];
+  const fallbackIndex = Math.abs(v.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % fallbacks.length;
+  return fallbacks[fallbackIndex];
+};
+
+const carry = (v: string, t: string) => {
+  // Theme-based carry-in responses with variety
+  const byTheme: Record<string, string[]> = {
+    "work-life balance": [
+      "This balance theme keeps coming up for you.",
+      "You're still navigating that work-life harmony.",
+      "Balance remains on your mind—that's important.",
+      "Working through these balance challenges again."
+    ],
+    productivity: [
+      "Your productivity focus continues to evolve.",
+      "Still optimizing how you work—great awareness.",
+      "Productivity patterns are developing nicely.",
+      "You're consistently thinking about efficiency."
+    ],
+    "startup culture": [
+      "Startup life keeps presenting new perspectives.",
+      "The entrepreneurial journey continues to shape you.",
+      "You're deeply engaged with this startup experience.",
+      "Building something meaningful takes persistence."
+    ],
+    "personal growth": [
+      "Your growth mindset keeps expanding.",
+      "Self-development remains a priority—wonderful.",
+      "You're consistently investing in yourself.",
+      "Personal evolution is clearly important to you."
+    ],
+    relationships: [
+      "Connections with others continue to matter to you.",
+      "You're building meaningful relationships.",
+      "Social bonds remain a focus—that's healthy.",
+      "Your relational awareness keeps growing."
+    ]
+  };
+
+  if (byTheme[t]) {
+    const responses = byTheme[t];
+    const index = Math.abs(t.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % responses.length;
+    return responses[index];
+  }
+
+  // Vibe-based carry-in responses with variety
+  const byVibe: Record<string, string[]> = {
+    anxious: [
+      "These anxious feelings are surfacing again.",
+      "You're working through anxiety—that takes courage.",
+      "Worry patterns are familiar, but so is your strength.",
+      "Anxiety is visiting again—you know how to handle this."
+    ],
+    excited: [
+      "Your enthusiasm keeps shining through!",
+      "That excitement is becoming a beautiful pattern.",
+      "Your energy continues to inspire.",
+      "Excitement seems to be your natural state lately."
+    ],
+    exhausted: [
+      "Fatigue is showing up again—listen to your body.",
+      "You're recognizing tiredness—that's self-awareness.",
+      "Rest continues to call to you.",
+      "Your energy levels are asking for attention."
+    ],
+    grateful: [
+      "Gratitude keeps flowing from you naturally.",
+      "Your appreciation continues to grow.",
+      "Thankfulness is becoming a beautiful habit.",
+      "You're cultivating a grateful heart."
+    ],
+    confident: [
+      "Your confidence is building consistently.",
+      "Self-assurance keeps growing stronger.",
+      "You're developing a solid sense of self.",
+      "Confidence is becoming your natural state."
+    ],
+    neutral: [
+      "You're developing consistent reflection patterns.",
+      "These thoughtful moments are becoming regular.",
+      "Your contemplative nature continues to show.",
+      "Steady reflection is becoming your rhythm."
+    ],
+    happy: [
+      "Joy keeps finding its way into your thoughts.",
+      "Happiness is becoming a familiar visitor.",
+      "Your positive energy continues to surface.",
+      "Contentment seems to be growing in you."
+    ],
+    sad: [
+      "You're allowing yourself to feel deeply again.",
+      "These quieter emotions are part of your process.",
+      "Sadness is visiting—you're handling it with grace.",
+      "Your emotional honesty continues to show."
+    ],
+    frustrated: [
+      "Frustration is surfacing again—that's information.",
+      "You're recognizing these challenging feelings.",
+      "These intense emotions are part of your growth.",
+      "Your awareness of frustration is developing."
+    ]
+  };
+
+  if (byVibe[v]) {
+    const responses = byVibe[v];
+    const index = Math.abs(v.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % responses.length;
+    return responses[index];
+  }
+
+  // Fallback for carry-in situations
+  const fallbacks = [
+    "These patterns are becoming familiar to you.",
+    "You're developing consistent themes in your reflections.",
+    "Similar thoughts are surfacing—that's meaningful.",
+    "You're processing recurring themes thoughtfully."
+  ];
+  const fallbackIndex = Math.abs((v + t).split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % fallbacks.length;
+  return fallbacks[fallbackIndex];
+};
+
+const standard = (v: string) => {
+  const responses: Record<string, string[]> = {
+    anxious: [
+      "Take a breath—you've got this.",
+      "Anxiety is temporary, your strength is lasting.",
+      "One step at a time—you're braver than you know.",
+      "Your worries are valid, but so is your resilience."
+    ],
+    excited: [
+      "That enthusiasm is infectious!",
+      "Love seeing your energy shine through!",
+      "Your excitement lights up the room.",
+      "Channel that energy—amazing things await!"
+    ],
+    exhausted: [
+      "Rest when you need it.",
+      "Your body is asking for care—listen to it.",
+      "Tired doesn't mean weak, it means human.",
+      "Recovery is part of the journey."
+    ],
+    confident: [
+      "That confidence suits you.",
+      "Your self-assurance is inspiring.",
+      "Own that confidence—you've earned it.",
+      "Believing in yourself is half the battle won."
+    ],
+    frustrated: [
+      "Challenges make us stronger.",
+      "Your frustration shows you care deeply.",
+      "This too shall pass—you're tougher than this.",
+      "Channel that energy into positive change."
+    ],
+    grateful: [
+      "Gratitude transforms everything.",
+      "Your appreciation creates more joy.",
+      "Thankfulness is a beautiful mindset.",
+      "Gratitude multiplies the good in life."
+    ],
+    sad: [
+      "Tough days don't last forever.",
+      "It's okay to feel down—you're not alone.",
+      "Your feelings are valid and temporary.",
+      "Tomorrow holds new possibilities."
+    ],
+    happy: [
+      "Your joy brightens the day.",
+      "Happiness looks good on you!",
+      "Your positive energy is contagious.",
+      "Savor these beautiful moments."
+    ]
+  };
+
+  const vibeResponses = responses[v];
+  if (vibeResponses) {
+    // Use a simple hash of the vibe to pick a consistent but varied response
+    const index = Math.abs(v.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % vibeResponses.length;
+    return vibeResponses[index];
+  }
+
+  return "Thanks for sharing your thoughts.";
+};
