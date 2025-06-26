@@ -54,8 +54,13 @@ export interface PipelineContext {
   response_text: string;
   start_time: number;
   costs: {
+    embedding_tokens: number;
     embedding_cost: number;
+    embedding_type: 'real' | 'mock';
+    gpt_tokens: number;
     gpt_cost: number;
+    gpt_type: 'real' | 'mock';
+    total_tokens: number;
     total_cost: number;
   };
 }
@@ -66,6 +71,7 @@ export interface PipelineResult {
   carry_in: boolean;
   updated_profile: UserProfile;
   execution_time: number;
+  total_tokens: number;
   total_cost: number;
 }
 

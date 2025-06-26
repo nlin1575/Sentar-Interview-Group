@@ -38,6 +38,6 @@ function createSeededRandom(seed: number): () => number {
 
 // Mock cost calculation for embedding generation
 export function calculateEmbeddingCost(text: string): number {
-  // Mock cost: $0.001 per embedding regardless of text length
-  return 0.001;
+  // Mock cost: $0 (we don't count mock costs toward total)
+  return 0;
 }

@@ -6,7 +6,7 @@
 //   2) mock fallback if Ollama fails
 // --------------------------------------------------------------
 import { PipelineContext, LogEntry } from '../types';
-import { generateGPTResponse, isOpenAIAvailable } from '../services/openai';
+import { generateGPTResponse } from '../services/openai';
 
 export async function step11_gptReply(
   context: Partial<PipelineContext>
@@ -28,7 +28,7 @@ export async function step11_gptReply(
   /* -------------------------------------------
      Call generateGPTResponse (local → mock)
   ------------------------------------------- */
-  const { response: response_text, cost: gptCost } = await generateGPTResponse(
+  const { response: response_text, tokens: gptTokens, cost: gptCost, type: gptType } = await generateGPTResponse(
     parsed,
     profile,
     carry_in,
@@ -39,8 +39,13 @@ export async function step11_gptReply(
      Update cost tracking
   ------------------------------------------- */
   const prevCosts = context.costs || {
+    embedding_tokens: 0,
     embedding_cost: 0,
+    embedding_type: 'mock' as const,
+    gpt_tokens: 0,
     gpt_cost: 0,
+    gpt_type: 'mock' as const,
+    total_tokens: 0,
     total_cost: 0
   };
 
@@ -49,7 +54,10 @@ export async function step11_gptReply(
     response_text,
     costs: {
       ...prevCosts,
+      gpt_tokens: gptTokens,
       gpt_cost: gptCost,
+      gpt_type: gptType,
+      total_tokens: prevCosts.total_tokens + gptTokens,
       total_cost: prevCosts.total_cost + gptCost
     }
   };
@@ -57,12 +65,7 @@ export async function step11_gptReply(
   /* -------------------------------------------
      Build log entry
   ------------------------------------------- */
-  const apiType = isOpenAIAvailable
-    ? 'OpenAI API'
-    : gptCost === 0
-    ? 'LOCAL LLM'
-    : 'MOCK';
-
+  const costDisplay = gptType === 'mock' ? 'MOCK' : `$${gptCost.toFixed(4)}`;
   const log: LogEntry = {
     tag: 'GPT_REPLY',
     input: `vibes=[${parsed.vibe.join(
@@ -71,9 +74,7 @@ export async function step11_gptReply(
       profile.entry_count
     }`,
     output: `response_text="${response_text}" (${response_text.length} chars)`,
-    note: `[${apiType}] Generated empathic response, cost: $${gptCost.toFixed(
-      4
-    )}`
+    note: `[${gptType.toUpperCase()}] Generated empathic response, cost: ${costDisplay}`
   };
 
   return { context: updatedContext, log };

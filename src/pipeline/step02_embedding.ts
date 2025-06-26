@@ -1,5 +1,5 @@
 import { PipelineContext, LogEntry } from '../types';
-import { generateEmbedding, isOpenAIAvailable } from '../services/openai';
+import { generateEmbedding } from '../services/openai';
 
 /**
  * Step 02: EMBEDDING
@@ -12,26 +12,31 @@ export async function step02_embedding(context: Partial<PipelineContext>): Promi
   }
 
   // Generate embedding using OpenAI API or fallback to mock
-  const { embedding, cost } = await generateEmbedding(context.raw_text);
+  const { embedding, tokens, cost, type } = await generateEmbedding(context.raw_text);
 
   // Update context
   const updatedContext: Partial<PipelineContext> = {
     ...context,
     embedding,
     costs: {
+      embedding_tokens: tokens,
       embedding_cost: cost,
+      embedding_type: type,
+      gpt_tokens: 0,
       gpt_cost: 0,
+      gpt_type: 'mock',
+      total_tokens: tokens,
       total_cost: cost
     }
   };
 
   // Create log entry
-  const apiType = isOpenAIAvailable ? 'OpenAI API' : 'MOCK';
+  const costDisplay = type === 'mock' ? 'MOCK' : `$${cost.toFixed(4)}`;
   const log: LogEntry = {
     tag: 'EMBEDDING',
     input: `raw_text="${context.raw_text.substring(0, 30)}${context.raw_text.length > 30 ? '...' : ''}"`,
     output: `embedding[${embedding.length}] (first 3: [${embedding.slice(0, 3).map(n => n.toFixed(4)).join(', ')}...])`,
-    note: `[${apiType}] Generated ${embedding.length}D embedding, cost: $${cost.toFixed(4)}`
+    note: `[${type.toUpperCase()}] Generated ${embedding.length}D embedding, cost: ${costDisplay}`
   };
 
   return { context: updatedContext, log };

@@ -19,7 +19,7 @@ const PY_SCRIPT = path.resolve(__dirname, '../utils/embed.py');
 
 export async function generateEmbedding(
   text: string
-): Promise<{ embedding: number[]; cost: number }> {
+): Promise<{ embedding: number[]; tokens: number; cost: number; type: 'real' | 'mock' }> {
   try {
     const result = spawnSync('python3', [PY_SCRIPT], { input: text, encoding: 'utf8', maxBuffer: 5_000_000 });
 
@@ -32,12 +32,16 @@ export async function generateEmbedding(
     }
 
     /* Real cost: all-MiniLM is local ⇒ $0 */
-    return { embedding, cost: 0 };
+    const tokens = Math.ceil(text.length / 4); // Approximate tokens (4 chars per token)
+    return { embedding, tokens, cost: 0, type: 'real' };
   } catch (err) {
     console.warn('[EMBEDDING] Python embed failed, using mock:', err);
+    const tokens = Math.ceil(text.length / 4); // Approximate tokens (4 chars per token)
     return {
       embedding: generateMockEmbedding(text, 384),
-      cost: calculateEmbeddingCost(text)
+      tokens,
+      cost: calculateEmbeddingCost(text),
+      type: 'mock'
     };
   }
 }
@@ -50,7 +54,7 @@ export async function generateGPTResponse(
   profile: any,
   carry_in: boolean,
   emotion_flip: boolean
-): Promise<{ response: string; cost: number }> {
+): Promise<{ response: string; tokens: number; cost: number; type: 'real' | 'mock' }> {
 
   try {
     const prompt = buildEmpathyPrompt(parsed, profile, carry_in, emotion_flip);
@@ -89,7 +93,12 @@ Response:
     /* hard cap length */
     if (reply.length > MAX) reply = reply.slice(0, MAX - 3).trimEnd() + '...';
 
-    return { response: reply, cost: 0 };
+    // Estimate tokens: prompt + response
+    const promptTokens = Math.ceil(fullPrompt.length / 4);
+    const responseTokens = Math.ceil(reply.length / 4);
+    const totalTokens = promptTokens + responseTokens;
+
+    return { response: reply, tokens: totalTokens, cost: 0, type: 'real' };
   } catch (err) {
     console.warn('[GPT_REPLY] Local LLM failed, using mock:', err);
     return generateMockGPTResponse(parsed, profile, carry_in, emotion_flip);
@@ -123,9 +132,10 @@ AI: You've handled challenges before—focus now, victory ahead.
 
 
 /*──────────────── mock fallback (unchanged logic) ────────────────*/
-function generateMockGPTResponse(parsed: any, profile: any, carry_in: boolean, emotion_flip: boolean): { response: string; cost: number } {
+function generateMockGPTResponse(parsed: any, profile: any, carry_in: boolean, emotion_flip: boolean): { response: string; tokens: number; cost: number; type: 'real' | 'mock' } {
   const resp = generateEmpathicResponseMock(parsed, profile, carry_in, emotion_flip);
-  return { response: resp, cost: 0.002 };
+  const tokens = Math.ceil(resp.length / 4); // Approximate tokens for response
+  return { response: resp, tokens, cost: 0, type: 'mock' }; // Mock cost = $0
 }
 
 /* ---- Mock helpers (same as before) ---- */

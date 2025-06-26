@@ -151,6 +151,7 @@ app.post('/api/bulk-process', async (req, res) => {
           response_text: result.response_text,
           carry_in: result.carry_in,
           execution_time: result.execution_time,
+          total_tokens: result.total_tokens,
           total_cost: result.total_cost
         });
 

@@ -19,6 +19,7 @@ export function step12_publish(context: Partial<PipelineContext>): { context: Pa
     carry_in: context.carry_in,
     updated_profile: context.profile,
     execution_time,
+    total_tokens: context.costs.total_tokens,
     total_cost: context.costs.total_cost
   };
 
@@ -30,7 +31,7 @@ export function step12_publish(context: Partial<PipelineContext>): { context: Pa
     tag: 'PUBLISH',
     input: `entryId="${context.entry_id}", response_text="${context.response_text}", carry_in=${context.carry_in}`,
     output: `final_result packaged`,
-    note: `Pipeline complete: ${execution_time}ms, $${context.costs.total_cost.toFixed(4)} total cost`
+    note: `Pipeline complete: ${execution_time}ms, ${context.costs.total_tokens} tokens, $${context.costs.total_cost.toFixed(4)} total cost`
   };
 
   return { context: updatedContext, log, result };

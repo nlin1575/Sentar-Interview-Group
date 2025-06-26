@@ -12,6 +12,7 @@ interface PipelineResult {
     trait_pool: string[];
   };
   execution_time: number;
+  total_tokens: number;
   total_cost: number;
 }
 
@@ -29,6 +30,7 @@ interface BulkProcessResult {
   response_text?: string;
   carry_in?: boolean;
   execution_time?: number;
+  total_tokens?: number;
   total_cost?: number;
   error?: string;
 }
