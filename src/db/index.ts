@@ -58,24 +58,22 @@ class InMemoryDatabase {
     this.userEntries.clear();
   }
 
-  // Initialize with mock data for testing
-  initializeMockData(userId: string = 'default', entryCount: number = 99): void {
-    this.clear();
-
+  // Private helper to generate mock entries
+  private _generateMockEntries(userId: string, count: number, startNum: number = 0): void {
     const mockThemes = ['work-life balance', 'productivity', 'startup culture', 'intern management', 'personal growth'];
     const mockVibes = ['driven', 'curious', 'overwhelmed', 'excited', 'anxious', 'confident'];
     const mockTraits = ['organiser', 'builder', 'mentor', 'analytical', 'creative'];
     const mockBuckets = ['Goal', 'Thought', 'Hobby', 'Value', 'Reflection'];
 
-    for (let i = 0; i < entryCount; i++) {
+    for (let i = 0; i < count; i++) {
       const theme = mockThemes[Math.floor(Math.random() * mockThemes.length)];
       const vibe = mockVibes[Math.floor(Math.random() * mockVibes.length)];
       const trait = mockTraits[Math.floor(Math.random() * mockTraits.length)];
       const bucket = mockBuckets[Math.floor(Math.random() * mockBuckets.length)];
 
       const entry: DiaryEntry = {
-        id: `mock-entry-${i + 1}`,
-        raw_text: `Mock diary entry ${i + 1} about ${theme}. Feeling ${vibe} today.`,
+        id: `mock-entry-${startNum + i + 1}`,
+        raw_text: `Mock diary entry ${startNum + i + 1} about ${theme}. Feeling ${vibe} today.`,
         embedding: Array.from({ length: 384 }, () => Math.random() * 2 - 1),
         meta_data: {
           word_count: 10 + Math.floor(Math.random() * 20),
@@ -94,7 +92,7 @@ class InMemoryDatabase {
           persona_trait: [trait],
           bucket: [bucket]
         },
-        timestamp: new Date(Date.now() - (entryCount - i) * 24 * 60 * 60 * 1000),
+        timestamp: new Date(Date.now() - (count - i) * 24 * 60 * 60 * 1000),
         carry_in: Math.random() > 0.7,
         emotion_flip: Math.random() > 0.8
       };
@@ -102,10 +100,38 @@ class InMemoryDatabase {
       this.saveEntry(entry, userId);
     }
 
-    // Create aggregated profile
+    // Update profile
     const allEntries = this.getAllEntries(userId);
     const profile = this.createProfileFromEntries(allEntries);
     this.saveProfile(profile, userId);
+  }
+
+  // Initialize with mock data for testing
+  initializeMockData(userId: string = 'default', entryCount: number = 99): void {
+    this.clear();
+    this._generateMockEntries(userId, entryCount, 0);
+  }
+
+  // Add mock entries without clearing
+  addMockEntries(userId: string = 'default', count: number = 1): void {
+    // Use profile.entry_count as maxNum if available
+    const profile = this.getProfile(userId);
+    console.log(`profile: ${JSON.stringify(profile,null,2)}`);
+    const maxNum = db.getEntryCount(userId);
+    
+    console.log(`count: ${count} maxNum: ${maxNum} `);
+    this._generateMockEntries(userId, count, maxNum);
+  }
+
+  clearUser(userId: string): void {
+    // Remove all entry IDs for this user
+    const entryIds = this.userEntries.get(userId) || [];
+    // Remove each entry from the global entries map
+    entryIds.forEach(id => {
+      this.entries.delete(id);
+    });
+    this.userEntries.delete(userId);
+    this.profiles.delete(userId);
   }
 
   private createProfileFromEntries(entries: DiaryEntry[]): UserProfile {
