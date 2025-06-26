@@ -119,9 +119,16 @@ function App() {
     for (let i = startIndex; i < lines.length && entries.length < 99; i++) {
       const line = lines[i].trim();
       if (line) {
-        // Simple CSV parsing - assumes transcript is in first column or entire line
-        // Handle both quoted and unquoted values
-        let transcript = line.split(',')[0]?.trim();
+        // Parse CSV and get the second column (index 1) for 'transcript_user'
+        const columns = line.split(',');
+
+        // Check if second column exists
+        if (columns.length < 2) {
+          console.warn(`Row ${i + 1}: Missing second column 'transcript_user', skipping`);
+          continue;
+        }
+
+        let transcript = columns[1]?.trim(); // Second column (index 1)
 
         // Remove surrounding quotes if present
         if (transcript && transcript.startsWith('"') && transcript.endsWith('"')) {
@@ -238,7 +245,7 @@ function App() {
 
         <div className="csv-upload-section">
           <h3>📊 Bulk CSV Processing</h3>
-          <p>Upload a CSV file with up to 99 diary entries to process them all through the pipeline. <strong>The first row must be a header and will be skipped.</strong></p>
+          <p>Upload a CSV file with up to 99 diary entries to process them all through the pipeline. <strong>The first row must be a header and will be skipped. Transcripts should be in the second column titled 'transcript_user'.</strong></p>
 
           <div className="csv-upload-form">
             <div className="form-group">
@@ -264,17 +271,17 @@ function App() {
               <p><strong>CSV Format Requirements:</strong></p>
               <ul>
                 <li><strong>First row must be a header</strong> (will be skipped during processing)</li>
-                <li>Each subsequent row should contain a transcript in the first column</li>
+                <li><strong>Second column must be titled 'transcript_user'</strong> and contain the diary entries</li>
                 <li>Transcripts can be quoted or unquoted</li>
                 <li>Maximum 99 entries (excluding header)</li>
               </ul>
               <p><strong>Example CSV:</strong></p>
               <code>
-                transcript<br/>
-                "I'm feeling excited about this new project!"<br/>
-                "Work has been stressful but I'm managing."<br/>
-                "Today was a great day for learning."<br/>
-                I had a wonderful conversation with my team today.
+                id,transcript_user,other_column<br/>
+                1,"I'm feeling excited about this new project!",data<br/>
+                2,"Work has been stressful but I'm managing.",data<br/>
+                3,"Today was a great day for learning.",data<br/>
+                4,I had a wonderful conversation with my team today.,data
               </code>
             </div>
 
