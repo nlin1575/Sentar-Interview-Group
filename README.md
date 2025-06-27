@@ -1,6 +1,6 @@
 # 🧠 Sentari Pipeline - From Transcript to Empathy
 
-AI-powered diary analysis system that transforms transcripts into empathetic responses and builds long-term user profiles through a 13-step pipeline.
+AI-powered diary analysis system that transforms transcripts into empathetic responses and builds long-term user profiles through a 13-step pipeline. By Aneesh, Effan, Nicolas
 
 ## 🚀 Quick Setup
 
