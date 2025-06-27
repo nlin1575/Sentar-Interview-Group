@@ -226,60 +226,6 @@ function App() {
 							{loading ? "🔄 Processing..." : "🚀 Run Pipeline"}
 						</button>
 					</form>
-
-					{/* Manual Entry Results - Show immediately below form */}
-					{result && (
-						<div className="manual-result">
-							<h4>📊 Pipeline Result</h4>
-
-							<div className="result-summary">
-								<div className="summary-stats">
-									<div className="stat">
-										<span className="label">Response:</span>
-										<span className="value">"{result.response_text}"</span>
-									</div>
-									<div className="stat">
-										<span className="label">Carry-in:</span>
-										<span className="value">{result.carry_in ? "✅ Yes" : "❌ No"}</span>
-									</div>
-									<div className="stat">
-										<span className="label">Execution Time:</span>
-										<span className="value">{result.execution_time}ms</span>
-									</div>
-									<div className="stat">
-										<span className="label">Total Tokens:</span>
-										<span className="value">{result.total_tokens}</span>
-									</div>
-									<div className="stat">
-										<span className="label">Total Cost:</span>
-										<span className="value">${result.total_cost.toFixed(4)}</span>
-									</div>
-								</div>
-							</div>
-
-							<div className="profile-summary">
-								<h5>👤 Updated Profile</h5>
-								<div className="summary-stats">
-									<div className="stat">
-										<span className="label">Entry Count:</span>
-										<span className="value">{result.updated_profile.entry_count}</span>
-									</div>
-									<div className="stat">
-										<span className="label">Dominant Vibe:</span>
-										<span className="value">"{result.updated_profile.dominant_vibe}"</span>
-									</div>
-									<div className="stat">
-										<span className="label">Top Themes:</span>
-										<span className="value">[{result.updated_profile.top_themes.join(', ')}]</span>
-									</div>
-									<div className="stat">
-										<span className="label">Trait Pool:</span>
-										<span className="value">[{result.updated_profile.trait_pool.join(', ')}]</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					)}
 				</div>
 
 				<div className="csv-upload-section">
@@ -363,71 +309,6 @@ function App() {
 								: "🚀 Process CSV Entries"}
 						</button>
 					</div>
-
-					{/* CSV Processing Results - Show immediately below CSV upload */}
-					{bulkResults && (
-						<div className="csv-results">
-							<h4>📊 CSV Processing Results</h4>
-
-							<div className="bulk-summary">
-								<div className="summary-stats">
-									<div className="stat">
-										<span className="label">Processed:</span>
-										<span className="value">{bulkResults.processed_count} entries</span>
-									</div>
-									<div className="stat">
-										<span className="label">Total Cost:</span>
-										<span className="value">${bulkResults.summary.total_cost.toFixed(4)}</span>
-									</div>
-									<div className="stat">
-										<span className="label">Total Time:</span>
-										<span className="value">{bulkResults.summary.total_time}ms</span>
-									</div>
-									<div className="stat">
-										<span className="label">Avg Time:</span>
-										<span className="value">{bulkResults.summary.average_time.toFixed(1)}ms</span>
-									</div>
-								</div>
-							</div>
-
-							<div className="bulk-entries">
-								<h5>📋 Entry Results</h5>
-								<div className="entries-list">
-									{bulkResults.results.map((entry, index) => (
-										<div
-											key={index}
-											className={`entry-result ${entry.error ? "error" : "success"}`}
-										>
-											<div className="entry-header">
-												<span className="entry-number">#{entry.index}</span>
-												<span className="entry-status">
-													{entry.error ? "❌ Error" : "✅ Success"}
-												</span>
-											</div>
-											<div className="entry-transcript">
-												"{entry.transcript.substring(0, 100)}
-												{entry.transcript.length > 100 ? "..." : ""}"
-											</div>
-											{entry.error ? (
-												<div className="entry-error">Error: {entry.error}</div>
-											) : (
-												<div className="entry-details">
-													<div className="entry-response">
-														Response: "{entry.response_text}"
-													</div>
-													<div className="entry-meta">
-														Carry-in: {entry.carry_in ? "✅" : "❌"} •
-														Cost: ${entry.total_cost?.toFixed(4)} •
-														Time: {entry.execution_time}ms
-													</div>
-												</div>
-											)}
-										</div>
-									))}
-								</div>
-							</div>
-						</div>
-					)}
 				</div>
 
 				{error && (
@@ -437,9 +318,244 @@ function App() {
 					</div>
 				)}
 
+				{/* Manual Entry Results */}
+				{result && (
+					<div className="bulk-results">
+						<h3>📝 Manual Entry Results</h3>
 
+						<div className="manual-summary">
+							<div className="summary-stats">
+								<div className="stat">
+									<span className="label">Processed:</span>
+									<span className="value">1 entry</span>
+								</div>
+								<div className="stat">
+									<span className="label">Total Cost:</span>
+									<span className="value">
+										${result.total_cost.toFixed(4)}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Total Time:</span>
+									<span className="value">
+										{result.execution_time}ms
+									</span>
+								</div>
+							</div>
+						</div>
 
+						<div className="final-profile">
+							<h4>👤 Updated Profile</h4>
+							<div className="profile-stats">
+								<div className="stat">
+									<span className="label">
+										Total Entries:
+									</span>
+									<span className="value">
+										{result.updated_profile.entry_count}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">
+										Dominant Vibe:
+									</span>
+									<span className="value">
+										{result.updated_profile.dominant_vibe}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Top Themes:</span>
+									<span className="value">
+										{result.updated_profile.top_themes.join(
+											", "
+										)}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Traits:</span>
+									<span className="value">
+										{result.updated_profile.trait_pool.join(
+											", "
+										)}
+									</span>
+								</div>
+							</div>
+						</div>
 
+						<div className="manual-entries">
+							<h4>📋 Entry Result</h4>
+							<div className="entries-list">
+								<div className="entry-result success">
+									<div className="entry-header">
+										<span className="entry-number">#1</span>
+										<span className="entry-status">
+											✅ Success
+										</span>
+									</div>
+									<div className="entry-transcript">
+										"{transcript.substring(0, 100)}
+										{transcript.length > 100 ? "..." : ""}"
+									</div>
+									<div className="entry-details">
+										<div className="entry-response">
+											Response: "{result.response_text}"
+										</div>
+										<div className="entry-meta">
+											Carry-in:{" "}
+											{result.carry_in ? "✅" : "❌"} •
+											Cost: $
+											{result.total_cost.toFixed(4)} •
+											Time: {result.execution_time}ms
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Bulk CSV Processing Results */}
+				{bulkResults && (
+					<div className="bulk-results">
+						<h3>📊 Bulk CSV Processing Results</h3>
+
+						<div className="bulk-summary">
+							<div className="summary-stats">
+								<div className="stat">
+									<span className="label">Processed:</span>
+									<span className="value">
+										{bulkResults.processed_count} entries
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Total Cost:</span>
+									<span className="value">
+										$
+										{bulkResults.summary.total_cost.toFixed(
+											4
+										)}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Total Time:</span>
+									<span className="value">
+										{bulkResults.summary.total_time}ms
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Avg Time:</span>
+									<span className="value">
+										{bulkResults.summary.average_time.toFixed(
+											1
+										)}
+										ms
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<div className="final-profile">
+							<h4>👤 Final Profile After Processing</h4>
+							<div className="profile-stats">
+								<div className="stat">
+									<span className="label">
+										Total Entries:
+									</span>
+									<span className="value">
+										{bulkResults.final_profile.entry_count}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">
+										Dominant Vibe:
+									</span>
+									<span className="value">
+										{
+											bulkResults.final_profile
+												.dominant_vibe
+										}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Top Themes:</span>
+									<span className="value">
+										{bulkResults.final_profile.top_themes.join(
+											", "
+										)}
+									</span>
+								</div>
+								<div className="stat">
+									<span className="label">Traits:</span>
+									<span className="value">
+										{bulkResults.final_profile.trait_pool.join(
+											", "
+										)}
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<div className="bulk-entries">
+							<h4>📋 Individual Entry Results</h4>
+							<div className="entries-list">
+								{bulkResults.results.map((result, index) => (
+									<div
+										key={index}
+										className={`entry-result ${
+											result.error ? "error" : "success"
+										}`}
+									>
+										<div className="entry-header">
+											<span className="entry-number">
+												#{result.index}
+											</span>
+											<span className="entry-status">
+												{result.error
+													? "❌ Failed"
+													: "✅ Success"}
+											</span>
+										</div>
+										<div className="entry-transcript">
+											"
+											{result.transcript.substring(
+												0,
+												100
+											)}
+											{result.transcript.length > 100
+												? "..."
+												: ""}
+											"
+										</div>
+										{result.error ? (
+											<div className="entry-error">
+												Error: {result.error}
+											</div>
+										) : (
+											<div className="entry-details">
+												<div className="entry-response">
+													Response: "
+													{result.response_text}"
+												</div>
+												<div className="entry-meta">
+													Carry-in:{" "}
+													{result.carry_in
+														? "✅"
+														: "❌"}{" "}
+													• Cost: $
+													{result.total_cost?.toFixed(
+														4
+													)}{" "}
+													• Time:{" "}
+													{result.execution_time}ms
+												</div>
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+				)}
 			</main>
 
 			<footer className="footer">
