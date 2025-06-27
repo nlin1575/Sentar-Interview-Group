@@ -48,10 +48,12 @@ body {
 }
 
 .input-section {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-group {
@@ -530,4 +532,58 @@ body {
 .entry-error {
   color: #e53e3e;
   font-weight: 500;
+}
+
+/* Manual Entry Results */
+.manual-result {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.manual-result h4 {
+  color: #4a5568;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.manual-result h5 {
+  color: #4a5568;
+  margin: 15px 0 10px 0;
+  font-size: 1.1rem;
+}
+
+/* CSV Results */
+.csv-results {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.csv-results h4 {
+  color: #4a5568;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.csv-results h5 {
+  color: #4a5568;
+  margin: 15px 0 10px 0;
+  font-size: 1.1rem;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
 }
