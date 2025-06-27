@@ -29,34 +29,13 @@ async function isLocalLLMAvailable(): Promise<boolean> {
 }
 
 /*───────────────────────────────────────────────────────────────────
-  1.  Embeddings   (OpenAI → Local → Mock)
+  1.  Embeddings   (Local → Mock)
 ───────────────────────────────────────────────────────────────────*/
 const PY_SCRIPT = path.resolve(__dirname, '../utils/embed.py');
 
 export async function generateEmbedding(
   text: string
-): Promise<{ embedding: number[]; tokens: number; cost: number; type: 'openai' | 'local' | 'mock' }> {
-  
-  // Try OpenAI first
-  if (isOpenAIAvailable && openai) {
-    try {
-      const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text,
-        encoding_format: 'float'
-      });
-      
-      const embedding = response.data[0].embedding;
-      const tokens = response.usage.total_tokens;
-      // OpenAI text-embedding-3-small: $0.00002 per 1K tokens
-      const cost = (tokens / 1000) * 0.00002;
-      
-      return { embedding, tokens, cost, type: 'openai' };
-    } catch (err) {
-      console.warn('[EMBEDDING] OpenAI failed, trying local:', err);
-    }
-  }
-
+): Promise<{ embedding: number[]; tokens: number; cost: number; type: 'local' | 'mock' }> {
   // Try local embedding
   try {
     const result = spawnSync('python3', [PY_SCRIPT], { input: text, encoding: 'utf8', maxBuffer: 5_000_000 });
@@ -98,7 +77,7 @@ export async function generateGPTResponse(
   const fullPrompt = `
 You are an empathetic AI companion. 
 Reply with ONE sentence of gentle support that ends with an encouraging action or positive reassurance.
-It MUST be 120 characters or fewer.
+It MUST be 25 characters or fewer.
 
 ${prompt}
 
@@ -111,7 +90,7 @@ Response:
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an empathetic AI companion. Reply with ONE sentence of gentle support that ends with an encouraging action or positive reassurance. It MUST be 120 characters or fewer.' },
+          { role: 'system', content: 'You are an empathetic AI companion. Reply with ONE sentence of gentle support that ends with an encouraging action or positive reassurance. It MUST be 25 characters or fewer.' },
           { role: 'user', content: prompt }
         ],
         max_tokens: 40,

@@ -1,4 +1,5 @@
 import { DiaryEntry, UserProfile } from '../types';
+import { faker } from '@faker-js/faker';
 
 // In-memory storage for the pipeline
 class InMemoryDatabase {
